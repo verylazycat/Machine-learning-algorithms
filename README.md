@@ -59,7 +59,7 @@ with tf.Session() as sess:
     print("分类准确率为:",accuracy)
 ```
 
-![](.\images\knn.PNG)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\knn.PNG)
 
 ------
 
@@ -150,7 +150,7 @@ clf.fit(iris_data,iris_lable)
 print('[7,7,7,7]预测类别是',iris_target_name[clf.predict([[7,7,7,7]])])
 ```
 
-![](.\images\Decising_tree_.PNG)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\Decising_tree_.PNG)
 
 ------
 
@@ -182,7 +182,7 @@ $$
 $$
 d=2/||w||
 $$
-![](.\images\linear separability.jpg)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\linear separability.jpg)
 
 ###### 损失函数（loss function）：
 
@@ -216,7 +216,7 @@ $$
 L(p)=exp(-p)
 $$
 
-![](.\images\loss function.jpg)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\loss function.jpg)
 
 ###### 核方法：
 
@@ -235,7 +235,7 @@ $$
 k(X_1,X_2)=\phi(X_1)^{T}\phi(X_2)
 $$
 
-![](.\images\核.png)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\核.png)
 
 ###### 代码：
 
@@ -325,7 +325,7 @@ plt.ylabel('Sepal Length')
 plt.show()
 ```
 
-![](.\images\SVM.png)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\SVM.png)
 
 ------
 
@@ -421,4 +421,4 @@ if __name__ == '__main__':
     testingNB()
 ```
 
-![](.\images\bayes.PNG)
+![](https://github.com/verylazycat/Machine-learning-algorithms/tree/master/images\bayes.PNG)
