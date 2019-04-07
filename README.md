@@ -182,7 +182,7 @@ $$
 $$
 d=2/||w||
 $$
-![](./images/linear separability.jpg)
+![](./images/linear_separability.jpg)
 
 ###### 损失函数（loss function）：
 
@@ -216,7 +216,7 @@ $$
 L(p)=exp(-p)
 $$
 
-![](./images/loss function.jpg)
+![](./images/loss_function.jpg)
 
 ###### 核方法：
 
