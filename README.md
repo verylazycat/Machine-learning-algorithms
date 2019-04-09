@@ -483,3 +483,90 @@ $$
 4. 训练算法，寻找最佳系数
 5. 测试算法，测试分类
 6. 使用算法：输入数据，转化为结构化的数据，接着用基于最佳回归系数进行回归计算并分类
+
+###### 代码演示：
+
+```
+![logistic](D:\github exchange\机器学习常见算法\images\logistic.PNG)import tensorflow as tf
+from numpy import *
+x_train = [[1.0, 2.0], [2.0, 1.0], [2.0, 3.0], [3.0, 5.0], [1.0, 3.0], [4.0, 2.0], [7.0, 3.0], [4.0, 5.0], [11.0, 3.0], [8.0, 7.0]]
+y_train = [1, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+#调用mat( )函数可以将数组转化为矩阵
+y_train = mat(y_train)
+theta = tf.Variable(tf.zeros([2, 1]))
+theta0 = tf.Variable(tf.zeros([1, 1]))
+y = 1 / (1 + tf.exp(-tf.matmul(x_train, theta) + theta0))
+#损失函数，均方误差
+loss = tf.reduce_mean(- y_train.reshape(-1, 1) * tf.log(y) - (1 - y_train.reshape(-1, 1)) * tf.log(1 - y))
+#梯度下降减小loss
+train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+#初始化
+init = tf.initialize_all_variables()
+sess = tf.Session()
+sess.run(init)
+for step in range(1000):
+    sess.run(train)
+#flatten()函数功能是把多维数组降为一维
+print(step, sess.run(theta).flatten(), sess.run(theta0).flatten())
+```
+
+![](./images/logistic.PNG)
+
+------
+
+### AdaBoost
+
+###### 介绍：
+
+Adaboost是一种迭代算法，其核心思想是针对同一个训练集训练不同的分类器(弱分类器)，然后把这些弱分类器集合起来，构成一个更强的最终分类器(强分类器)。其算法本身是通过改变数据分布来实现的，它根据每次训练集之中每个样本的分类是否正确，以及上次的总体分类的准确率，来确定每个样本的权值。将修改过权值的新数据集送给下层分类器进行训练，最后将每次训练得到的分类器最后融合起来，作为最后的决策分类器。使用adaboost分类器可以排除一些不必要的训练数据特征，并放在关键的训练数据上面。
+
+###### 集成方法（ensemble）&元算法（meta-algorithm）：
+
+即把多种分类器结合在一起，结合的方式有多种：可以是不同算法的结合，也可以是同一算法在不同的设置下的集成
+
+```
+AdaBoost
+优点：泛化错误率低，易编码，可以应用大部分分类器，无参数调整
+缺点：对离群点敏感
+适用数据类型：数值型和标称型数据
+```
+
+###### bagging：
+
+自举汇聚法（boostrap aggregating）：从原始数据选择S次后得到S个新数据集的技术，新数据和原数据大小相等，在S个数据建立好之后，将某个学习算法作用于每个数据集就得到S个分类器
+
+###### boosting：
+
+boosting和bagging很相似，使用的分类器都是一样的，但前者不同的分类器是通过串行训练获得的，每个新分类器都根据自己训练出的分类器性能进行训练。boosting是通过集中关注已有分类器错分的那些数据来获得新的分类器。
+
+boosting分类结果是基于所有分类器的加权求和结果的，而bagging的权重是一样的。
+
+###### AdaBoost一般流程：
+
+1. 收集数据
+
+2. 准备数据，依赖于所使用的弱分类器
+
+3. 分析数据
+
+4. 训练算法
+
+5. 测试算法，计算分类的错误率
+
+6. 使用算法
+
+   ###### 训练算法：基于错误提升分类器的性能：
+
+   ###### AdaBoost（adaptive boosting）自适应boosting：
+
+   训练数据中的每个样品，赋予其一个权重，刚开始，这些权重初始化为相等的，这些权重构成了一个向量D，首先在这些数据集中训练出一个弱分类器，并计算出错误率，然后在同一数据集上再次训练弱分类器，在第二次训练，会调整权重，为了从所有弱分类器得到分类结果，Adaboost为每个分类器分配了一个权重值alpha，这些alpha值基于每个分类器错误率计算得到的。
+   $$
+   错误率：
+   \epsilon=未正确分类的样本数目/所有样本数目
+   $$
+   
+
+alpha计算公式：
+$$
+\alpha = (1/2)ln{(1-\epsilon)/\epsilon}
+$$
