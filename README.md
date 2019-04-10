@@ -564,9 +564,28 @@ boosting分类结果是基于所有分类器的加权求和结果的，而baggin
    错误率：
    \epsilon=未正确分类的样本数目/所有样本数目
    $$
-   
+
 
 alpha计算公式：
 $$
 \alpha = (1/2)ln{(1-\epsilon)/\epsilon}
 $$
+
+计算出alpha后，更新权重向量D
+
+D的计算方式：
+$$
+D_{i}^{t+1}=D_{i}^{t}e^{-a}/sum(D)
+$$
+如果错分，则更新为：
+$$
+D_{i}^{t+1}=D_{i}^{t}e^{a}/sum(D)
+$$
+代码演示
+
+```
+
+```
+
+### CART（classification and regression tree）
+
