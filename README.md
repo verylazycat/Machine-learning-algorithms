@@ -437,9 +437,9 @@ logistic回归是一种广义线性回归（generalized linear model），因此
 
 ![](./images/sigmiod.PNG)
 
-![](.\images\sigmoid.jpg)
+![](./images/sigmoid.jpg)
 
-![](.\images\sigmoid1.png)
+![](./images/sigmoid1.png)
 
 z是一个矩阵，θ是参数列向量(要求解的)，x是样本列向量(给定的数据集)。θ^T表示θ的转置。g(z)函数实现了任意实数到[0,1]的映射，这样我们的数据集([x0,x1,…,xn])，不管是大于1或者小于0，都可以映射到[0,1]区间进行分类。hθ(x)给出了输出为1的概率。
 
@@ -766,7 +766,7 @@ CART算法是一种二分递归分割技术，把当前样本划分为两个子�
 
    [tensorflow详细](https://github.com/verylazycat/tensorflow-)
 
-   ![](D:\github exchange\机器学习常见算法\images\cnn.jpg)
+   ![](./images/cnn.jpg)
 
    ###### 相关数学知识：
 
@@ -856,4 +856,5 @@ CART算法是一种二分递归分割技术，把当前样本划分为两个子�
    因此CART算法生成的决策树是结构简洁的二叉树。由于CART算法构成的是一个二叉树，它在每一步的决策时只能
 
    是“是”或者“否”，即使一个feature有多个取值，也是把数据分为两部分
---------------------- 
+
+---------------------
