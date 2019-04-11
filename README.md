@@ -1,3 +1,5 @@
+#以下算法在以后时间尽量会写详尽，尤其是其数学推导
+
 ### KNN
 
 ###### 介绍
@@ -584,8 +586,274 @@ $$
 代码演示
 
 ```
-
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import make_gaussian_quantiles
+#用make_gaussian_quantiles生成多组多维正态分布的数据
+#这里生成2维正态分布，设定样本数1000，协方差2
+x1,y1=make_gaussian_quantiles(cov=2., n_samples=200, n_features=2, n_classes=2, shuffle=True, random_state=1)
+#为了增加样本分布的复杂度，再生成一个数据分布
+x2,y2=make_gaussian_quantiles(mean=(3,3), cov=1.5, n_samples=300, n_features=2, n_classes=2, shuffle=True, random_state=1)
+#合并
+X=np.vstack((x1,x2))
+y=np.hstack((y1,1-y2))
+#plt.scatter(X[:,0],X[:,1],c=Y)
+#plt.show()
+#设定弱分类器CART
+weakClassifier=DecisionTreeClassifier(max_depth=1)
+#构建模型。
+clf=AdaBoostClassifier(base_estimator=weakClassifier,algorithm='SAMME',n_estimators=300,learning_rate=0.8)
+clf.fit(X, y)
+#绘制分类效果
+x1_min=X[:,0].min()-1
+x1_max=X[:,0].max()+1
+x2_min=X[:,1].min()-1
+x2_max=X[:,1].max()+1
+x1_,x2_=np.meshgrid(np.arange(x1_min,x1_max,0.02),np.arange(x2_min,x2_max,0.02))
+y_=clf.predict(np.c_[x1_.ravel(),x2_.ravel()])
+y_=y_.reshape(x1_.shape)
+plt.contourf(x1_,x2_,y_,cmap=plt.cm.Paired)
+plt.scatter(X[:,0],X[:,1],c=y)
+plt.show()
 ```
+
+![](./images/adaboost.png)
+
+------
 
 ### CART（classification and regression tree）
 
+###### 介绍：
+
+CART算法是一种二分递归分割技术，把当前样本划分为两个子样本，使得生成的每个非叶子结点都有两个分支，因此CART算法生成的决策树是结构简洁的二叉树。由于CART算法构成的是一个二叉树，它在每一步的决策时只能   是“是”或者“否”，即使一个feature有多个取值，也是把数据分为两部分。
+
+###### 算法：
+
+###### 其中T代表当前样本集，当前候选属性集用T_attributelist表示
+
+1. 创建根节点N
+
+2. 为N分配类别
+
+3. if T 都属于同一类别or T中只剩下 一个样本则返回N为叶节点，否则为其分配属性
+
+4. for each T_attributelist中属性执行该属性上的一个划分，计算此划分的GINI系数
+
+5. N的测试属性test_attribute=T_attributelist中最小GINI系数的属性
+
+6. 划分T得到T1 T2子集
+
+7. 对于T1重复（1）-（6）
+
+8. 对于T2重复（1）-（6）
+
+   ###### Gini：
+
+   $$
+   Gini(A) = 1-\sum_{i=1}^{C}p_{i}^{2}
+   $$
+
+   其中pi表示属于第i类的概率，当Gini(A)=0时，所有样本属于同类，所有类在节点中以等概率出现时，Gini(A)最大化，此时
+   $$
+   C(C-1)/2
+   $$
+   pi 有了上述理论基础，实际的递归划分过程是这样的：如果当前节点的所有样本都不属于同一类或者只剩下一个样本，那么此节点为非叶子节点，所以会尝试样本的每个属性以及每个属性对应的分裂点，尝试找到杂质变量最大的一个划分，该属性划分的子树即为最优分支。
+
+   ###### 代码演示：
+
+   ```
+   #待定
+   ```
+
+   ### CNN
+
+   ###### 介绍：
+
+   卷积神经网络，听起来像是计算机科学、生物学和数学的诡异组合，但它们已经成为计算机视觉领域中最具影响力的革新的一部分。神经网络在 2012 年崭露头角，Alex Krizhevsky 凭借它们赢得了那一年的 ImageNet 挑战赛（大体上相当于计算机视觉的年度奥林匹克），他把分类误差记录从 26% 降到了 15%，在当时震惊了世界。自那之后，大量公司开始将深度学习用作服务的核心。Facebook 将神经网络用于自动标注算法、谷歌将它用于图片搜索、亚马逊将它用于商品推荐、Pinterest 将它用于个性化主页推送、Instagram 将它用于搜索架构。
+
+   #### 框架搭建步骤:
+
+   ###### 1.前向传播:
+
+   ```python
+   def forward(x,regularizer):
+   	w=
+   	b=
+   	y=
+   	return y
+   def get_weight(shape,regularizer):
+   	tf.add_to_collection('losses',tf.contrib.layers.l2_regularizer(regularizer)(w)) 
+   	return w
+   def get_bias(shape):
+   	b = tf.Variable()
+   	return b
+   ```
+
+   ###### 2.反向传播：
+
+   ```python
+   def backward():
+   	x = tf.placeholder(    ) 
+   	y_ = tf.placeholder(    ) 
+   	y = forward.forward(x, REGULARIZER) 
+   	global_step = tf.Variable(0, trainable=False)   
+   	loss =   
+   ```
+
+   ###### 3.正则化：
+
+   ```python
+   #MSE
+   loss_mse = tf.reduce_mean(tf.square(y-y_))
+   #交叉熵
+   ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_, 1))
+   #损失加上正则化
+   loss = y 与 y_的差距 + tf.add_n(tf.get_collection('losses'))  
+   #指数衰减
+   learning_rate = tf.train.exponential_decay( 
+    LEARNING_RATE_BASE,   
+    global_step,        
+    数据集总样本数 / BATCH_SIZE, 
+           LEARNING_RATE_DECAY,
+           staircase=True)     
+   train_step=tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step=global_step)
+   #滑动平均
+   ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)     
+   ema_op = ema.apply(tf.trainable_variables())     
+   with tf.control_dependencies([train_step, ema_op]):         
+    train_op = tf.no_op(name='train')
+   #初始化参数
+   with tf.Session() as sess:         
+    init_op = tf.global_variables_initializer() 
+          sess.run(init_op) 
+    for i in range(STEPS): 
+        sess.run(train_step, feed_dict={x:   , y_:   }) 
+               if i % 轮数 == 0: 
+               print
+   ```
+
+   ```python
+   #MSE
+   loss_mse = tf.reduce_mean(tf.square(y-y_))
+   #交叉熵
+   ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_, 1))
+   #损失加上正则化
+   loss = y 与 y_的差距 + tf.add_n(tf.get_collection('losses'))  
+   #指数衰减
+   learning_rate = tf.train.exponential_decay( 
+    LEARNING_RATE_BASE,   
+    global_step,        
+    数据集总样本数 / BATCH_SIZE, 
+           LEARNING_RATE_DECAY,
+           staircase=True)     
+   train_step=tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step=global_step)
+   #滑动平均
+   ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)     
+   ema_op = ema.apply(tf.trainable_variables())     
+   with tf.control_dependencies([train_step, ema_op]):         
+    train_op = tf.no_op(name='train')
+   #初始化参数
+   with tf.Session() as sess:         
+    init_op = tf.global_variables_initializer() 
+          sess.run(init_op) 
+    for i in range(STEPS): 
+        sess.run(train_step, feed_dict={x:   , y_:   }) 
+               if i % 轮数 == 0: 
+               print
+   ```
+
+   [tensorflow详细](https://github.com/verylazycat/tensorflow-)
+
+   ![](D:\github exchange\机器学习常见算法\images\cnn.jpg)
+
+   ###### 相关数学知识：
+
+   ###### 感知机：
+
+   ![](./images/感知机.jpg)
+
+   数学模型：
+   $$
+    f(x)=action(\theta^{T}+b)
+   $$
+   其中action为激活函数，可以是sigmoid，relu，tanh，还有一个特殊的激活函数softmax
+
+   ![](./images/action.jpg)
+
+   ###### sigmoid：
+
+   $$
+   \sigma = 1/{1+e^{-x}}
+   $$
+
+   ![](./images/sigmoid1.png)
+
+   目前很少用sigmoid了。
+
+   - *Sigmoid函数饱和使梯度消失*。当神经元的激活在接近0或1处时会饱和，在这些区域梯度几乎为0，这就会导致梯度消失，几乎就有没有信号通过神经传回上一层。
+
+   - *Sigmoid函数的输出不是零中心的*。因为如果输入神经元的数据总是正数，那么关于![w](https://www.zhihu.com/equation?tex=w)的梯度在反向传播的过程中，将会要么全部是正数，要么全部是负数，这将会导致梯度下降权重更新时出现z字型的下降。
+
+     ###### tanh：
+
+     $$
+     tanh(x)=2{\sigma}(2x)-1
+     $$
+
+     ![](./images/tanh.jpg)
+
+   Tanh解决了Sigmoid的输出是不是零中心的问题，但仍然存在饱和问题。为了防止饱和，现在主流的做法会在激活函数前多做一步batch normalization，尽可能保证每一层网络的输入具有均值较小的、零中心的分布。
+
+   ###### relu：
+
+   $$
+   f(x)=max(0,x)
+   $$
+
+   ![](./images/relu.jpg)
+
+   相较于sigmoid和tanh函数，ReLU对于随机梯度下降的收敛有巨大的加速作用；sigmoid和tanh在求导时含有指数运算，而ReLU求导几乎不存在任何计算量
+
+   ###### 代码：
+
+   ```python
+   #导入tensorflow
+   import tensorflow as tf
+   #导入数据
+   import tensorflow.examples.tutorials.mnist.input_data as input_data
+   mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+   #定义喂入数据
+   x = tf.placeholder("float", [None, 784])
+   #定义权重
+   #定义偏置
+   W = tf.Variable(tf.zeros([784,10]))
+   b = tf.Variable(tf.zeros([10]))
+   #预测值
+   y = tf.nn.softmax(tf.matmul(x,W) + b)
+   #真实值
+   y_ = tf.placeholder("float", [None,10])
+   #交叉熵计算
+   cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+   #梯度下降
+   train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
+   #初始化
+   init = tf.initialize_all_variables()
+   sess = tf.Session()
+   sess.run(init)
+   for i in range(1000):
+       batch_xs, batch_ys = mnist.train.next_batch(100)
+       sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+   #返回布尔类型，需要转化为float
+   correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+   accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+   print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
+   ```
+
+   ![](./images/cnn.PNG)
+
+   因此CART算法生成的决策树是结构简洁的二叉树。由于CART算法构成的是一个二叉树，它在每一步的决策时只能
+
+   是“是”或者“否”，即使一个feature有多个取值，也是把数据分为两部分
+--------------------- 
