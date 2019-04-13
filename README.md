@@ -794,7 +794,7 @@ CART算法是一种二分递归分割技术，把当前样本划分为两个子�
 
    - *Sigmoid函数饱和使梯度消失*。当神经元的激活在接近0或1处时会饱和，在这些区域梯度几乎为0，这就会导致梯度消失，几乎就有没有信号通过神经传回上一层。
 
-   - *Sigmoid函数的输出不是零中心的*。因为如果输入神经元的数据总是正数，那么关于![w](https://www.zhihu.com/equation?tex=w)的梯度在反向传播的过程中，将会要么全部是正数，要么全部是负数，这将会导致梯度下降权重更新时出现z字型的下降。
+   - *Sigmoid函数的输出不是零中心的*。因为如果输入神经元的数据总是正数，那么关于w的梯度在反向传播的过程中，将会要么全部是正数，要么全部是负数，这将会导致梯度下降权重更新时出现z字型的下降。
 
      ###### tanh：
 
@@ -858,3 +858,160 @@ CART算法是一种二分递归分割技术，把当前样本划分为两个子�
    是“是”或者“否”，即使一个feature有多个取值，也是把数据分为两部分
 
 ---------------------
+
+### RNN
+
+介绍：
+
+循环神经网络，**Recurrent Neural Network**。神经网络是一种节点定向连接成环的人工神经网络。这种网络的内部状态可以展示动态时序行为。不同于前馈神经网络的是，RNN可以利用它内部的记忆来处理任意时序的输入序列，这让它可以更容易处理如不分段的手写识别、语音识别等。神经网络专家如Jordan，Pineda．Williams，Elman等于上世纪80年代末提出的一种神经网络结构模型。即循环神经网络(Recurrent Neural Network，RNN)。这种网络的本质特征是在处理单元之间既有内部的反馈连接又有前馈连接。从系统观点看，它是一个反馈动力系统，在计算过程中体现过程动态特性，比前馈神经网络具有更强的动态行为和计算能力。循环神经网络现已成为国际上神经网络专家研究的重要对象之一。不同于传统的FNNs(Feed-forward Neural Networks，前向反馈神经网络)，RNNs引入了定向循环，能够处理那些输入之间前后关联的问题。
+
+![](./images/rnn.jpg)
+
+###### RNNS:
+
+RNNs的目的使用来处理序列数据。在传统的神经网络模型中，是从输入层到隐含层再到输出层，层与层之间是全连接的，每层之间的节点是无连接的。但是这种普通的神经网络对于很多问题却无能无力.例如，你要预测句子的下一个单词是什么，一般需要用到前面的单词，因为一个句子中前后单词并不是独立的。
+
+![](./images/rnns.png)
+
+![](./images/rnns.jpg)
+
+上面这幅图中展示了一个RNN展开成为一个完整的神经网路的过程，一个最简单的展开方式就是，输入序列中有多少个状态，就将隐藏层展开多少次。比如，前面提到的步态识别中，将步态序列归一化成为10个状态，那么一个简单的RNN展开后，就可以在隐藏层展开出10层，并且，每个步态状态对应于展开出来的一个隐藏层。
+
+RNN计算流程：
+
+- xt是输入序列在  时刻的输入向量
+
+- st是在  时刻隐藏层的输出，这是RNN的记忆单元，st的计算基于前一次隐藏层计算的输出 s（t-1）以及当前的输入xt
+
+- ot是步骤t时刻得输出
+
+  ###### ######RNN里面得算法有好几个，以后继续补充#####
+
+  ###### 代码演示：
+
+  ```
+  import copy, numpy as np
+  np.random.seed(0)
+  
+  # compute sigmoid nonlinearity
+  def sigmoid(x):
+      output = 1/(1+np.exp(-x))
+      return output
+  
+  # convert output of sigmoid function to its derivative
+  def sigmoid_output_to_derivative(output):
+      return output*(1-output)
+  
+  # training dataset generation
+  int2binary = {}
+  binary_dim = 8
+  
+  largest_number = pow(2,binary_dim)
+  binary = np.unpackbits(
+      np.array([range(largest_number)],dtype=np.uint8).T,axis=1)
+  for i in range(largest_number):
+      int2binary[i] = binary[i]
+  
+  # input variables
+  alpha = 0.1
+  input_dim = 2
+  hidden_dim = 16
+  output_dim = 1
+  
+  # initialize neural network weights
+  synapse_0 = 2*np.random.random((input_dim,hidden_dim)) - 1
+  synapse_1 = 2*np.random.random((hidden_dim,output_dim)) - 1
+  synapse_h = 2*np.random.random((hidden_dim,hidden_dim)) - 1
+  
+  synapse_0_update = np.zeros_like(synapse_0)
+  synapse_1_update = np.zeros_like(synapse_1)
+  synapse_h_update = np.zeros_like(synapse_h)
+  
+  # training logic
+  for j in range(10000):
+  
+      # generate a simple addition problem (a + b = c)
+      a_int = np.random.randint(largest_number/2) # int version
+      a = int2binary[a_int] # binary encoding
+  
+      b_int = np.random.randint(largest_number/2) # int version
+      b = int2binary[b_int] # binary encoding
+  
+      # true answer
+      c_int = a_int + b_int
+      c = int2binary[c_int]
+  
+      # where we'll store our best guess (binary encoded)
+      d = np.zeros_like(c)
+  
+      overallError = 0
+  
+      layer_2_deltas = list()
+      layer_1_values = list()
+      layer_1_values.append(np.zeros(hidden_dim))
+  
+      # moving along the positions in the binary encoding
+      for position in range(binary_dim):
+  
+          # generate input and output
+          X = np.array([[a[binary_dim - position - 1],b[binary_dim - position - 1]]])
+          y = np.array([[c[binary_dim - position - 1]]]).T
+  
+          # hidden layer (input ~+ prev_hidden)
+          layer_1 = sigmoid(np.dot(X,synapse_0) + np.dot(layer_1_values[-1],synapse_h))
+  
+          # output layer (new binary representation)
+          layer_2 = sigmoid(np.dot(layer_1,synapse_1))
+  
+          # did we miss?... if so by how much?
+          layer_2_error = y - layer_2
+          layer_2_deltas.append((layer_2_error)*sigmoid_output_to_derivative(layer_2))
+          overallError += np.abs(layer_2_error[0])
+  
+          # decode estimate so we can print it out
+          d[binary_dim - position - 1] = np.round(layer_2[0][0])
+  
+          # store hidden layer so we can use it in the next timestep
+          layer_1_values.append(copy.deepcopy(layer_1))
+  
+      future_layer_1_delta = np.zeros(hidden_dim)
+  
+      for position in range(binary_dim):
+  
+          X = np.array([[a[position],b[position]]])
+          layer_1 = layer_1_values[-position-1]
+          prev_layer_1 = layer_1_values[-position-2]
+  
+          # error at output layer
+          layer_2_delta = layer_2_deltas[-position-1]
+          # error at hidden layer
+          layer_1_delta = (future_layer_1_delta.dot(synapse_h.T) +
+              layer_2_delta.dot(synapse_1.T)) * sigmoid_output_to_derivative(layer_1)
+          # let's update all our weights so we can try again
+          synapse_1_update += np.atleast_2d(layer_1).T.dot(layer_2_delta)
+          synapse_h_update += np.atleast_2d(prev_layer_1).T.dot(layer_1_delta)
+          synapse_0_update += X.T.dot(layer_1_delta)
+  
+          future_layer_1_delta = layer_1_delta
+  
+      synapse_0 += synapse_0_update * alpha
+      synapse_1 += synapse_1_update * alpha
+      synapse_h += synapse_h_update * alpha
+  
+      synapse_0_update *= 0
+      synapse_1_update *= 0
+      synapse_h_update *= 0
+  
+      # print out progress
+      if(j % 1000 == 0):
+          print("Error:" + str(overallError))
+          print("Pred:" + str(d))
+          print("True:" + str(c))
+          out = 0
+          for index,x in enumerate(reversed(d)):
+              out += x*pow(2,index)
+          print(str(a_int) + " + " + str(b_int) + " = " + str(out))
+          print ("------------")
+  ```
+
+  ![](./images/RNN.PNG)
