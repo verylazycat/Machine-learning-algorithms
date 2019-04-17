@@ -1019,3 +1019,140 @@ RNN计算流程：
 ------
 
 ### PCA
+
+###### 介绍：
+
+PCA（principal components analysis）即主成分分析技术，又称主分量分析。主成分分析也称主分量分析，旨在利用降维的思想，把多指标转化为少数几个综合指标。在统计学中，主成分分析PCA是一种简化数据集的技术。它是一个线性变换。这个变换把数据变换到一个新的坐标系统中，使得任何数据投影的第一大方差在第一个坐标(称为[第一主成分上，第二大方差在第二个坐标(第二主成分)上，依次类推。主成分分析经常用减少数据集的维数，同时保持数据集的对方差贡献最大的特征。这是通过保留低阶主成分，忽略高阶主成分做到的。这样低阶成分往往能够保留住数据的最重要方面。但是，这也不是一定的，要视具体应用而定。
+
+###### 变化步骤：
+
+- 计算矩阵X的样品协方差S（此为不标准PCA，标准PCA计算相关系数矩阵C）
+
+- 计算协方差矩阵S（或者C）的特征向量e1，e2....en和特征值，t=1，2 ...N
+
+- 投影数据到特征向量张成的空间中
+  $$
+  newBV_{i,p}=\sum_{k=1}^ne_{i}BV_{i,k}
+  $$
+  其中BV值是原样本中对应维度的值,PCA 的目标是寻找 r （ r<n ）个新变量，使它们反映事物的主要特征，压缩原有数据矩阵的规模，将特征向量的维数降低，挑选出最少的维数来概括最重要特征。每个新变量是原有变量的线性组合，体现原有变量的综合效果，具有一定的实际含义。这 r 个新变量称为“主成分”，它们可以在很大程度上反映原来 n 个变量的影响，并且这些新变量是互不相关的，也是正交的。通过主成分分析，压缩数据空间，将多元数据的特征在低维空间里直观地表示出来。
+
+###### 数学补充：
+
+###### 内积与投影：
+
+在数学中，数量积（dot product; scalar product，也称为点积）是接受在实数R上的两个向量并返回一个实数值标量的二元运算。它是欧几里得空间的标准内积。两个向量a=【a1,a2,...,an】和b=【b1,b2....bn】的点机为：
+
+a.b=a1b1+a2b2+...+anbn;
+
+![](./images/math.jpg)
+
+###### 基变换：
+
+[点击查阅](https://baike.baidu.com/item/%E5%9F%BA%E5%8F%98%E6%8D%A2/5915135)
+
+###### 坐标表示向量进一步思考：
+
+一个二维向量可以对应二维笛卡尔直角坐标系中从原点出发的一个有向线段，如下：
+
+![](./images/向量.png)
+
+我们用（2，3）表示这个向量，不过我们常常忽略，**只有一个(3,2)本身是不能够精确表示一个向量的**，我们仔细看一下，这里的3实际表示的是向量在x轴上的投影值是3，在y轴上的投影值是2。也就是说我们其实隐式引入了一个定义：以x轴和y轴上正方向长度为1的向量为标准。那么一个向量(3,2)实际是说在x轴投影为3而y轴的投影为2。注意投影是一个矢量，所以可以为负。 不难证明所有二维向量都可以表示为这样的线性组合。此处(1,0)和(0,1)叫做二维空间中的一组基。
+
+![](./images/向量0.png)
+
+所以，**要准确描述向量，首先要确定一组基，然后给出在基所在的各个直线上的投影值，就可以了**。只不过我们经常省略第一步，而默认以(1,0)和(0,1)为基。**任何两个线性无关的二维向量都可以成为一组基，所谓线性无关在二维平面内可以直观认为是两个不在一条直线上的向量**
+
+**一般的，如果我们有M个N维向量，想将其变换为由R个N维向量表示的新空间中，那么首先将R个基按行组成矩阵A，然后将向量按列组成矩阵B，那么两矩阵的乘积AB就是变换结果，其中AB的第m列为A中第m列变换后的结果**。**两个矩阵相乘的意义是将右边矩阵中的每一列列向量变换到左边矩阵中每一行行向量为基所表示的空间中去**。更抽象的说，一个矩阵可以表示一种线性变换。
+
+**将一组N维向量降为K维（K大于0，小于N），其目标是选择K个单位（模为1）正交基，使得原始数据变换到这组基上后，各字段两两间协方差为0，而字段的方差则尽可能大（在正交的约束下，取最大的K个方差）**
+
+#更具体解释以后补充
+
+```python
+import numpy as np
+from sklearn.decomposition import PCA
+import sys
+#returns choosing how many main factors
+def index_lst(lst, component=0, rate=0):
+    #component: numbers of main factors
+    #rate: rate of sum(main factors)/sum(all factors)
+    #rate range suggest: (0.8,1)
+    #if you choose rate parameter, return index = 0 or less than len(lst)
+    if component and rate:
+        print('Component and rate must choose only one!')
+        sys.exit(0)
+    if not component and not rate:
+        print('Invalid parameter for numbers of components!')
+        sys.exit(0)
+    elif component:
+        print('Choosing by component, components are %s......'%component)
+        return component
+    else:
+        print('Choosing by rate, rate is %s ......'%rate)
+        for i in range(1, len(lst)):
+            if sum(lst[:i])/sum(lst) >= rate:
+                return i
+        return 0
+
+def main():
+    # test data
+    mat = [[-1,-1,0,2,1],[2,0,0,-1,-1],[2,0,1,1,0]]
+    
+    # simple transform of test data
+    Mat = np.array(mat, dtype='float64')
+    print('Before PCA transforMation, data is:\n', Mat)
+    print('\nMethod 1: PCA by original algorithm:')
+    p,n = np.shape(Mat) # shape of Mat 
+    t = np.mean(Mat, 0) # mean of each column
+    
+    # substract the mean of each column
+    for i in range(p):
+        for j in range(n):
+            Mat[i,j] = float(Mat[i,j]-t[j])
+            
+    # covariance Matrix
+    cov_Mat = np.dot(Mat.T, Mat)/(p-1)
+    
+    # PCA by original algorithm
+    # eigvalues and eigenvectors of covariance Matrix with eigvalues descending
+    U,V = np.linalg.eigh(cov_Mat) 
+    # Rearrange the eigenvectors and eigenvalues
+    U = U[::-1]
+    for i in range(n):
+        V[i,:] = V[i,:][::-1]
+    # choose eigenvalue by component or rate, not both of them euqal to 0
+    Index = index_lst(U, component=2)  # choose how many main factors
+    if Index:
+        v = V[:,:Index]  # subset of Unitary matrix
+    else:  # improper rate choice may return Index=0
+        print('Invalid rate choice.\nPlease adjust the rate.')
+        print('Rate distribute follows:')
+        print([sum(U[:i])/sum(U) for i in range(1, len(U)+1)])
+        sys.exit(0)
+    # data transformation
+    T1 = np.dot(Mat, v)
+    # print the transformed data
+    print('We choose %d main factors.'%Index)
+    print('After PCA transformation, data becomes:\n',T1)
+    
+    # PCA by original algorithm using SVD
+    print('\nMethod 2: PCA by original algorithm using SVD:')
+    # u: Unitary matrix,  eigenvectors in columns 
+    # d: list of the singular values, sorted in descending order
+    u,d,v = np.linalg.svd(cov_Mat)
+    Index = index_lst(d, rate=0.95)  # choose how many main factors
+    T2 = np.dot(Mat, u[:,:Index])  # transformed data
+    print('We choose %d main factors.'%Index)
+    print('After PCA transformation, data becomes:\n',T2)
+    
+    # PCA by Scikit-learn
+    pca = PCA(n_components=2) # n_components can be integer or float in (0,1)
+    pca.fit(mat)  # fit the model
+    print('\nMethod 3: PCA by Scikit-learn:')
+    print('After PCA transformation, data becomes:')
+    print(pca.fit_transform(mat))  # transformed data
+            
+main()
+```
+
+![](./images/PCA.PNG)
